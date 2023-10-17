@@ -2,7 +2,7 @@
 
 
 help() {
-    
+    echo "USAGE: [--python VERSION]"
 }
 
 PYTHON_VERSION=3.9

@@ -1,0 +1,79 @@
+#!/usr/bin/bash
+
+
+Help()
+{
+   # Display Help
+   echo "Install tensorflow"
+   echo
+   echo "Syntax: tensorflow2.11.0-install.sh OPTIONS"
+   echo "OPTIONS:"
+   echo "-h                 Print this Help."
+   echo "-p VERSION         Install for python version."
+   echo "-c                 Use conda."
+   echo
+}
+
+# Find out if conda is being used
+function hasconda() {
+    # From: https://stackoverflow.com/questions/68034643/how-to-find-out-if-conda-is-already-available-on-a-machine-within-a-bash-script
+    local condapath=$(which conda)
+    if [ "$condapath" = "conda not found" ]; then
+        echo 0
+        return
+    fi
+    echo 1
+}
+
+PYTHON_VERSION=3.9
+WITH_CONDA=$(hasconda)
+
+while getopts ":hcp:" option; do
+    case $option in
+        h) # Display Help
+            Help
+            exit
+            ;;
+        p) # Python version
+            PYTHON_VERSION=${OPTARG}
+            ;;
+        c) # Use conda
+            WITH_CONDA=true
+            ;;
+        \?) # Invalid option
+            fi
+            echo "Error: Invalid option"
+            exit
+            ;;
+    esac
+done
+
+if WITH_CONDA; then
+    echo Installing with conda
+else
+    echo Installing with pip
+fi
+
+# Display cudnn version
+cat /usr/include/cudnn_version.h | grep CUDNN_MAJOR -A 2
+
+# Install dependencies
+sudo apt update
+sudo apt install libhdf5-serial-dev hdf5-tools libhdf5-dev zlib1g-dev zip libjpeg8-dev liblapack-dev libblas-dev gfortran
+
+
+if $WITH_CONDA; then
+    sconda
+    conda create -n tensorflow python=$PYTHON_VERSION
+    conda activate tensorflow
+    conda install -c conda-forge cudatoolkit=11.2 cudnn=8.1.0 -y
+    mkdir -p $CONDA_PREFIX/etc/conda/activate.d
+    echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/' > $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh
+    pip install --upgrade pip
+    pip install tensorflow==2.11.0
+
+else
+    sudo apt install python3-pip
+    sudo python3 -m pip install --upgrade pip
+    sudo pip3 install -U testresources setuptools==65.5.0
+fi

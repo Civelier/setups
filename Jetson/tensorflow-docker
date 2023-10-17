@@ -1,0 +1,112 @@
+#!/bin/bash
+
+declare -A versions
+
+# JetPack 5.1.1 (L4T R35.3.1)
+# l4t-tensorflow:r35.3.1-tf2.11-py3
+# TensorFlow 2.11.0
+versions["5.1.1"]="l4t-tensorflow:r35.3.1-tf2.11-py3"
+
+
+# JetPack 5.1 (L4T R35.2.1)
+# l4t-tensorflow:r35.2.1-tf2.11-py3
+# TensorFlow 2.11.0
+versions["5.1"]="l4t-tensorflow:r35.2.1-tf2.11-py3"
+
+
+# JetPack 5.0.2 (L4T R35.1.0)
+# l4t-tensorflow:r35.1.0-tf1.15-py3
+# TensorFlow 1.15.5
+# l4t-tensorflow:r35.1.0-tf2.9-py3
+# TensorFlow 2.9.1
+versions["5.0.2"]="l4t-tensorflow:r35.1.0-tf2.9-py3"
+
+# JetPack 5.0.1 Developer Preview (L4T R34.1.1)
+# l4t-tensorflow:r34.1.1-tf1.15-py3
+# TensorFlow 1.15.5
+# l4t-tensorflow:r34.1.1-tf2.8-py3
+# TensorFlow 2.8.0
+versions["5.0.1"]="l4t-tensorflow:r34.1.1-tf2.8-py3"
+
+# JetPack 5.0.0 Developer Preview (L4T R34.1.0)
+# l4t-tensorflow:r34.1.0-tf1.15-py3
+# TensorFlow 1.15.5
+# l4t-tensorflow:r34.1.0-tf2.8-py3
+# TensorFlow 2.8.0
+versions["5.0.0"]="l4t-tensorflow:r34.1.0-tf2.8-py3"
+
+# JetPack 4.6.1 (L4T R32.7.1)
+# l4t-tensorflow:r32.7.1-tf1.15-py3
+# TensorFlow 1.15.5
+# l4t-tensorflow:r32.7.1-tf2.7-py3
+# TensorFlow 2.7.0
+versions["4.6.1"]="l4t-tensorflow:r32.7.1-tf2.7-py3"
+
+# JetPack 4.6 (L4T R32.6.1)
+# l4t-tensorflow:r32.6.1-tf1.15-py3
+# TensorFlow 1.15.5
+# l4t-tensorflow:r32.6.1-tf2.5-py3
+# TensorFlow 2.5.0
+versions["4.6"]="l4t-tensorflow:r32.6.1-tf2.5-py3"
+versions["4.6.4"]="l4t-tensorflow:r32.6.1-tf2.5-py3"
+
+# JetPack 4.5 (L4T R32.5.0)
+# l4t-tensorflow:r32.5.0-tf1.15-py3
+# TensorFlow 1.15
+# l4t-tensorflow:r32.5.0-tf2.3-py3
+# TensorFlow 2.3.1
+versions["4.5"]=""
+
+# JetPack 4.4.1 (L4T R32.4.4)
+# l4t-tensorflow:r32.4.4-tf1.15-py3
+# TensorFlow 1.15
+# l4t-tensorflow:r32.4.4-tf2.3-py3
+# TensorFlow 2.3
+versions["4.4.1"]="l4t-tensorflow:r32.4.4-tf2.3-py3"
+
+# JetPack 4.4 (L4T R32.4.3)
+# l4t-tensorflow:r32.4.3-tf1.15-py3
+# TensorFlow 1.15
+# l4t-tensorflow:r32.4.3-tf2.2-py3
+# TensorFlow 2.2
+versions["4.4"]="l4t-tensorflow:r32.4.3-tf2.2-py3"
+
+
+version=$(apt list 2>/dev/null |grep nvidia-jetpack )
+split=$(echo $version | tr " " "\n")
+i=0
+for s in $split; do
+    v1=$s
+    if [ $i -eq 1 ]; then
+        break
+    fi
+    i=$((i+1))
+done
+
+split=$(echo $v1 | tr "-" "\n")
+
+i=0
+for s in $split; do
+    v2=$s
+    if [ $i -eq 0 ]; then
+        break
+    fi
+    i=$((i+1))
+done
+
+version=$v2
+
+
+echo Jetpack $version
+tf_version="${versions[$version]}"
+if [ $tf_version -eq "" ]; then
+    echo Unknown version of jetpack $version!
+    echo Add the supported version to the list.
+    exit
+fi
+echo Installing tensorflow version $tf_version
+sudo docker pull nvcr.io/nvidia/$tf_version
+
+echo Use
+echo "sudo docker run -it --rm --runtime nvidia --network host nvcr.io/nvidia/$tf_version"
+echo to run the container
